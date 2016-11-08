@@ -39,8 +39,7 @@ class Trainer:
         self.train_acc_list = []
         self.test_acc_list = []
         
-        self.start_time = time.clock()
-        self.end_time = time.clock()
+        self.pre_time = time.clock()
 
     def train_step(self):
         self.start_time = time.clock()
@@ -71,9 +70,9 @@ class Trainer:
             self.test_acc_list.append(test_acc)
 
             if self.verbose: 
-                self.end_time = time.clock()
                 print("=== epoch:" + str(self.current_epoch) + ", train acc:" + str(train_acc) + ", test acc:" + str(test_acc) + " ===")
-                print("epoch time = ", self.end_time-self.start_time)
+                print("epoch time = ", time.clock()-self.pre_time)
+                self.pre_time = time.clock()
         self.current_iter += 1
 
     def train(self):

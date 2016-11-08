@@ -22,8 +22,12 @@ y = np.ravel(np.array(p.read_csv(filepath_or_buffer=csv_test_path, header=None, 
 #データ変形
 X = X/255
 data_num = X.shape[0]
-X.resize(81000, 1, 20, 20)
-print("shape:", X.shape)
+reshaped_X = np.zeros((data_num,1,20,20))
+for i in range(0,data_num):
+    buff = X[i]
+    buff = np.reshape(buff, (20, 20))
+    reshaped_X[i][0] = buff
+print("shape:", reshaped_X.shape)
 #for i in range(0,data_num):
 #    matrix = X[i] 
 #    matrix.resize(1, 20, 20)
@@ -43,7 +47,7 @@ y = y.astype(dtype=int)
     
     
 from sklearn.cross_validation import train_test_split
-x_train,x_test,t_train,t_test = train_test_split(X,y,test_size = 0.2, random_state=42)
+x_train,x_test,t_train,t_test = train_test_split(reshaped_X,y,test_size = 0.2, random_state=42)
 #train_data,test_data,train_label,test_label = train_test_split(X,y,test_size = 0.2, random_state=42)
 
 end_time = time.clock()
@@ -62,12 +66,17 @@ max_epochs = 50 #元は20
 network = SimpleConvNet(input_dim=(1,20,20), 
                         conv_param = {'filter_num': 50, 'filter_size': 5, 'pad': 0, 'stride': 1},
                         hidden_size=100, output_size=81, weight_init_std=0.01)
-                        
+     
+## パラメータの読み込み
+#network.load_params("params_cnn2.pkl")
+                   
 trainer = Trainer(network, x_train, t_train, x_test, t_test,
                   epochs=max_epochs, mini_batch_size=100,
                   optimizer='Adam', optimizer_param={'lr': 0.001},
                   evaluate_sample_num_per_epoch=1000)
+
 trainer.train()
+
 
 train_acc_list, test_acc_list = trainer.train_acc_list, trainer.test_acc_list
 
@@ -75,7 +84,7 @@ end_time = time.clock()
 print("Learning Complete \nTime =", end_time - start_time)
 
 # パラメータの保存
-network.save_params("params_cnn2.pkl")
+network.save_params("params_cnn3.pkl")
 print("Saved Network Parameters!")
 
 # グラフの描画
