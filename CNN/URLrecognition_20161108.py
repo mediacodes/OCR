@@ -33,9 +33,9 @@ import cv2
 #from scipy.misc import imresize
 
 """"""""""""""""""""""""""" variables """""""""""""""""""""""""""""""""
-image_path ='C:\\Users\\mech-user\\Documents\\Tesseract\\pictures\\reference1.png'
-csv_result_path = 'C:\\Users\\mech-user\\Documents\\AlphabetsRecognition\\results\\find_letter_in_pic\\camera\\reference1_result.csv'
-csv_string_path = 'C:\\Users\\mech-user\\Documents\\AlphabetsRecognition\\results\\find_letter_in_pic\\camera\\reference1_string.csv'
+image_path ='C:\\Users\\mech-user\\Documents\\Tesseract\\pictures\\nanameURL1.png'
+csv_result_path = 'C:\\Users\\mech-user\\Documents\\AlphabetsRecognition\\results\\find_letter_in_pic\\camera\\nanameURL1_result.csv'
+csv_string_path = 'C:\\Users\\mech-user\\Documents\\AlphabetsRecognition\\results\\find_letter_in_pic\\camera\\nanameURL1_string.csv'
 alphabets=['zero','one','two','three','four','five','six','seven','eight','nine','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','apostrophe','and','asterisk','at','cl_parenthesis','colon','comma','dollar','dot','equal','exclamation','hyphen','op_parenthesis','percent','plus','question','semi-colon','slash','underbar']
 
 
@@ -187,7 +187,7 @@ if __name__ == '__main__':
     if ave2 < 127:
         thresh_final = 255 - thresh_final 
     
-#    pl.matshow(thresh_final)         #最終的な2値化画像を確認
+    pl.matshow(thresh_final)         #最終的な2値化画像を確認
     
     
     """ 文字領域の4端点を検出 """
@@ -390,6 +390,19 @@ if __name__ == '__main__':
         detected_images = []
         
         
+        
+        
+        nominates_index_np = np.zeros((10, len(scan_start)))
+        #nominates_index = pd.DataFrame(index=[0,1,2,3,4,5,6,7,8,9], columns=[] )
+        nominates_index = pd.DataFrame(nominates_index_np)
+        nominates_index = nominates_index.astype(str)
+    
+
+        nominates_prob_np = np.zeros((10, len(scan_start)))
+
+        
+
+        
         for detect in range(0,len(scan_start)):
             
             # scan_start[detect]とscan_end[detect]の間の領域が、detect番目に発見された文字領域である
@@ -421,7 +434,7 @@ if __name__ == '__main__':
                
                 detected_resize = imresize(resize, (20,20) )
                 
-            pl.matshow(detected_resize)    
+            #pl.matshow(detected_resize)    
                 
             
             network = SimpleConvNet(input_dim=(1,20,20), 
@@ -444,6 +457,25 @@ if __name__ == '__main__':
              
             predict_nominate = predict[predict[0] > 0] 
             
+            for (i, index) in enumerate(predict_nominate.index):              
+                nominates_index.loc[i, detect]= index
+                #print("i,index=",i,index)
+            for (i, prob) in enumerate(predict_nominate.values):
+                nominates_prob_np[i][detect] = prob[0]
+                #("i,prob=",i,prob[0])            
+            
+#            detect_index = str(detect)
+#            nominates_index.append(pd.DataFrame())
+#            
+#            nominates_index[detect_index] = [predict_nominate.index[0]]
+# #            for (i, index) in enumerate(predict_nominate.index):              
+#                nominates_index[i,detect] = index
+#                print("i,index=",i,index)
+#            for (i, prob) in enumerate(predict_nominate.values):
+#                nominates_prob[i][detect] = prob[0]
+#                print("i,prob=",i,prob[0])
+            
+            
 #            predict = clf.predict(a)[0]
 #            classes = clf.classes_
 #            pred_proba = clf.predict_proba(a)
@@ -460,15 +492,32 @@ if __name__ == '__main__':
 #                result_matrix = np.delete(result_matrix,index_max,1)
 #            #print("")
 #            
+            
             predict_string.append(predict.index[0])
-            predict_result.append(predict_nominate)
-        
+            #predict_result.append((predict_nominate.index[:], predict_nominate.values))
+            #nominates[detect] = predict_nominate
+            
+            
+            
         #print(predict_string)
 #        predict_result.append([])
 #        predict_string.append([])
-        
-    PREDICT_RESULT=pd.DataFrame(predict_result)
-    PREDICT_RESULT.to_csv(csv_result_path,index=0,header=None)    
+    
+
+
+    nominates_prob = pd.DataFrame(nominates_prob_np )
+    nominates_prob = nominates_prob.astype(str)   
+
+    nominates_np = np.empty((10, len(scan_start)))
+    nominates = pd.DataFrame(nominates_np)
+    nominates = nominates.astype(str)       
+    nominates = nominates_index + nominates_prob
+    
+    nominates = nominates[nominates != '0.00.0'] 
+    
+#    PREDICT_RESULT=pd.DataFrame(predict_result)
+#    PREDICT_RESULT.to_csv(csv_result_path,index=0,header=None)   
+    nominates.to_csv(csv_result_path,index=0,header=None,na_rep=' ')
     
     PREDICT_STRING=pd.DataFrame(predict_string)
     PREDICT_STRING.to_csv(csv_string_path,index=0,header=None,line_terminator='\t',sep='\t')  
