@@ -267,8 +267,8 @@ if __name__ == '__main__':
     #pl.matshow(warped)
 
     
-    thresh = transform_by4(thresh_final, points) 
-    #thresh = thresh_final
+    #thresh = transform_by4(thresh_final, points) 
+    thresh = thresh_final
 #    pl.matshow(thresh)
     
     if len(thresh.shape) == 3:
@@ -342,7 +342,7 @@ if __name__ == '__main__':
         conv_param = {'filter_num': 50, 'filter_size': 5, 'pad': 0, 'stride': 1},
         hidden_size=100, output_size=81, weight_init_std=0.01)                     
     # パラメータの読み込み
-    network_sliding.load_params("sliding_windows1(20by6).pkl")
+    network_sliding.load_params("sliding_windows2(20by20).pkl")
    
 
     letter_or_space = []
@@ -355,10 +355,10 @@ if __name__ == '__main__':
         
         
         data_sliding = np.zeros((1,1,20,20))
-        window_width = int(thresh_resize_height*4/20)
+        window_width = int(thresh_resize_height*8/20)
         img = thresh_resize[0:thresh_resize_height, scan:scan+window_width]
         reimg = imresize(img, (20, 20)).flatten() / 255.0 
-        if (scan ==197):
+        if (scan ==615):
             pl.matshow(np.resize(reimg,(20,20)))
         data_sliding[0][0] = np.resize(reimg,(20,20))
         for layer in network_sliding.layers.values():
@@ -372,7 +372,7 @@ if __name__ == '__main__':
         predict_sliding = predict_pd_sliding.sort_values(by=0, ascending=False)
          
         letter_or_space_pred.append(predict_sliding.loc['letter'][0]) 
-        if ((predict_sliding.index[0] == 'letter') and (predict_sliding.values[0][0] > 0.6)):
+        if ((predict_sliding.index[0] == 'letter') and (predict_sliding.values[0][0] > 0.9)):
             letter_or_space.append('letter')            
         else:
             letter_or_space.append('space')
